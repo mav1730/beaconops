@@ -13,9 +13,14 @@ app.get('/health', (req, res) => {
     message: 'BeaconOps API is live and breathing.' 
   });
 });
+app.use((req, res, next) => {
+  console.log(`Incoming ${req.method} request to: ${req.url}`);
+  next();
+});
 
 const leadroutes = require('./routes/leadRoutes');
 app.use('/api/leads',leadroutes);
+
 
 // Port Binding
 const PORT = process.env.PORT || 3000;
