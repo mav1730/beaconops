@@ -17,8 +17,9 @@ enum LeadStatus {
 }
 
 model Lead {
-  id        Int        @id @default(autoincrement())
-  url       String
-  status    LeadStatus @default(PENDING_AUDIT)
-  createdAt DateTime   @default(now())
+  id        String   @id @default(uuid())
+  url       String   @unique
+  score     Int?     // New: Store the Lighthouse score
+  pitch     String?  // New: Store the generated email
+  createdAt DateTime @default(now())
 }

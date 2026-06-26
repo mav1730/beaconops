@@ -1,24 +1,48 @@
-// src/controllers/leadController.js
-const prisma = require('../config/db');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-exports.createLead = async (req, res) => {
+// Import the engines
+const { runAudit } = require('../services/lighthouseService');
+const { generatePitch } = require('../services/geminiService');
+
+const createLead = async (req, res) => {
   try {
-    const { url } = req.body; // We know this is 100% safe and valid now
+    const { url } = req.body;
 
-    const newLead = await prisma.lead.create({
+    // 1. Run the Audit
+    const score = await runAudit(url);
+
+    // 2. Generate Pitch (If the audit succeeded)
+    let pitch = null;
+    if (score !== null) {
+      pitch = await generatePitch(url, score);
+    }
+
+    // 3. Save everything to the database
+    const lead = await prisma.lead.create({
       data: {
-        url: url,
-        status: 'PENDING_AUDIT'
+        url,
+        score,
+        pitch
       }
     });
 
+    // 4. Return the full package back to n8n/client
     res.status(201).json({
-      message: 'Lead successfully ingested.',
-      data: newLead
+      status: 'success',
+      data: lead
     });
 
   } catch (error) {
-    console.error('[!] Database Error:', error);
-    res.status(500).json({ error: 'Internal Server Error while saving lead.' });
+    console.error('[❌] Controller Error:', error.message);
+    
+    // Handle Prisma unique constraint error (URL already exists)
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'Lead already exists in database.' });
+    }
+    
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+module.exports = { createLead };
