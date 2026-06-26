@@ -42,8 +42,13 @@ const generatePitch = async (url, score) => {
       contents: prompt,
     });
 
+    const text = response.text || (response.candidates && response.candidates[0]?.content?.parts[0]?.text);
+    if (!text) {
+      throw new Error("Empty response received from Gemini API.");
+    }
+
     console.log(`[✅] Pitch successfully generated.`);
-    return response.text;
+    return text;
   } catch (error) {
     console.error(`[❌] Gemini API Error:`, error.message);
     const fallbackPitch = generateFallbackPitch(url, score);

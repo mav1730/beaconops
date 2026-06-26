@@ -21,6 +21,18 @@ const validateLead = (req, res, next) => {
     });
   }
 
+  // Normalize the URL: trim, lowercase host, remove trailing slash
+  let normalizedUrl = req.body.url.trim();
+  try {
+    const parsedUrl = new URL(normalizedUrl);
+    let pathname = parsedUrl.pathname.replace(/\/+$/, "");
+    normalizedUrl = parsedUrl.origin.toLowerCase() + pathname + parsedUrl.search;
+  } catch (e) {
+    normalizedUrl = normalizedUrl.replace(/\/+$/, "");
+  }
+  
+  req.body.url = normalizedUrl;
+
   // If validation passes, let them through to the Waiter
   next(); 
 };

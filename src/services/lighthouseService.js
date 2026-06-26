@@ -28,6 +28,13 @@ const runAudit = async (url) => {
       return fallbackScore;
     }
 
+    if (!data.lighthouseResult || !data.lighthouseResult.categories || !data.lighthouseResult.categories.performance) {
+      console.error(`[❌] Google API Error: Invalid response structure`, data);
+      const fallbackScore = generateFallbackScore();
+      console.warn(`[⚠️] Google PageSpeed API returned invalid response. Using mock fallback score: ${fallbackScore}/100`);
+      return fallbackScore;
+    }
+
     const score = data.lighthouseResult.categories.performance.score * 100;
     console.log(`[✅] Audit complete for ${url}. Score: ${score}/100`);
 

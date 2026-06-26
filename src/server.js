@@ -21,6 +21,30 @@ app.use((req, res, next) => {
 const leadroutes = require('./routes/leadRoutes');
 app.use('/api/leads',leadroutes);
 
+// Catch-all 404 handler for invalid routes
+app.use((req, res, next) => {
+  res.status(404).json({
+    status: 'error',
+    message: `Resource not found: ${req.method} ${req.url}`
+  });
+});
+
+// Global Error Handler Middleware
+app.use((err, req, res, next) => {
+  // Catch Express body-parser JSON parsing syntax errors
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Malformed JSON payload'
+    });
+  }
+
+  console.error('[❌] Unhandled Server Error:', err);
+  res.status(500).json({
+    status: 'error',
+    message: 'Internal Server Error'
+  });
+});
 
 // Port Binding
 const PORT = process.env.PORT || 3000;
