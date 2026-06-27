@@ -19,7 +19,8 @@ enum LeadStatus {
 model Lead {
   id        String   @id @default(uuid())
   url       String   @unique
-  score     Int?     // New: Store the Lighthouse score
-  pitch     String?  // New: Store the generated email
+  score     Int?     // Store the Lighthouse performance score
+  seo       Int?     // New: Store the Lighthouse SEO score
+  pitch     String?  // Store the generated email
   createdAt DateTime @default(now())
 }
